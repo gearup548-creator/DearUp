@@ -8,18 +8,15 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif}
   body{background:#0a0a0f;color:#fff}
-
   header{display:flex;justify-content:space-between;align-items:center;padding:20px 50px;background:linear-gradient(90deg,#0f0f1f,#1a1a2e);border-bottom:2px solid #00f0ff}
   header h1{font-family:'Orbitron',sans-serif;font-size:2em;color:#00f0ff;letter-spacing:2px;transition:.3s}
   header h1:hover{text-shadow:0 0 8px #00f0ff,0 0 18px #00f0ff,0 0 35px #00f0ff}
   nav a{color:#fff;margin-left:30px;text-decoration:none;font-weight:500;transition:.3s}
   nav a:hover{color:#00f0ff;text-shadow:0 0 6px #00f0ff,0 0 14px #00f0ff}
-
   .hero{text-align:center;padding:80px 20px;background:linear-gradient(180deg,#0a0a0f 0%,#1a1a2e 100%)}
   .hero h2{font-family:'Orbitron',sans-serif;font-size:3em;color:#00f0ff;margin-bottom:20px;transition:.3s}
   .hero h2:hover{text-shadow:0 0 10px #00f0ff,0 0 25px #00f0ff,0 0 45px #00f0ff}
   .hero p{font-size:1.2em;color:#aaa}
-
   .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:30px;padding:50px}
   .product-card{background:#1a1a2e;border:1px solid #00f0ff;border-radius:15px;overflow:hidden;transition:transform .3s,box-shadow .3s}
   .product-card:hover{transform:translateY(-12px);box-shadow:0 0 12px #00f0ff,0 0 30px #00f0ff,0 0 60px rgba(0,240,255,.6)}
@@ -31,14 +28,11 @@
   .product-info p{font-size:.95em;color:#ccc;margin-bottom:15px}
   .product-info button{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(90deg,#00f0ff,#0ff0f0);color:#0a0a0f;font-weight:bold;cursor:pointer;transition:.25s}
   .product-info button:hover{transform:scale(1.08);box-shadow:0 0 10px #00f0ff,0 0 25px #00f0ff,0 0 45px rgba(0,240,255,.7)}
-
   .register{background:#1a1a2e;margin:50px auto;padding:30px;border:2px solid #00f0ff;border-radius:15px;max-width:400px;text-align:center}
   .register input{width:80%;padding:10px;margin:10px 0;border-radius:8px;border:1px solid #00f0ff;background:#0a0a0f;color:#fff}
   .register button{padding:10px 20px;border:none;border-radius:10px;background:linear-gradient(90deg,#00f0ff,#0ff0f0);color:#0a0a0f;font-weight:bold;cursor:pointer;transition:.25s}
   .register button:hover{transform:scale(1.05);box-shadow:0 0 10px #00f0ff,0 0 25px #00f0ff}
-
   footer{text-align:center;padding:30px;border-top:2px solid #00f0ff;color:#aaa}
-
   @media (max-width:768px){header{flex-direction:column;text-align:center}nav a{margin:10px}.hero h2{font-size:2em}}
 </style>
 </head>
@@ -86,44 +80,52 @@
 </div>
 </section>
 
-<!-- Form registrazione utenti -->
 <section class="register">
 <h2>Registrati</h2>
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <button id="btnReg">Registrati</button>
+<p id="status" style="color:#0ff; margin-top:10px;"></p>
 </section>
 
 <footer>&copy; 2026 FuturoShop. Tutti i diritti riservati.</footer>
 
-<!-- Supabase: script DOPO il form -->
+<!-- Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // Supabase config
-  const supabaseUrl = "https://pyduvyjhlcndzzjjiakv.supabase.co";
-  const supabaseKey = "sb_publishable__BsSiVvMOaMIwYKQ4ZaCNw_BhHpRnph";
-  const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = "https://pyduvyjhlcndzzjjiakv.supabase.co"; // tuo URL
+const supabaseKey = "sb_publishable__BsSiVvMOaMIwYKQ4ZaCNw_BhHpRnph"; // tua chiave pubblica
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-  async function registrati() {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
+async function registrati() {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  const status = document.getElementById('status');
 
-    if (!email || !password) {
-      alert("Inserisci email e password!");
+  status.textContent = ""; // reset
+
+  if (!email || !password) {
+    status.textContent = "Inserisci email e password!";
+    return;
+  }
+
+  try {
+    const { data, error } = await supabase.auth.signUp({ email, password });
+    console.log("Supabase response:", { data, error }); // DEBUG
+
+    if (error) {
+      status.textContent = "Errore: " + error.message;
       return;
     }
 
-    try {
-      const { data, error } = await supabase.auth.signUp({ email, password });
-      if (error) throw error;
-      alert("Registrazione riuscita! Controlla la tua email per confermare l'account.");
-    } catch (err) {
-      alert("Errore: " + err.message);
-    }
+    status.textContent = "Registrazione riuscita! Controlla la tua email.";
+  } catch (err) {
+    console.error(err);
+    status.textContent = "Errore: " + err.message;
   }
+}
 
-  // Collega il bottone alla funzione (risolve il problema di "registrati is not defined")
-  document.getElementById("btnReg").addEventListener("click", registrati);
+document.getElementById("btnReg").addEventListener("click", registrati);
 </script>
 
 </body>
